@@ -10,7 +10,22 @@ Schedule generator for mixed-pair volleyball ribbon tournaments — randomly dra
 ## Setup
 
 1. Download or clone this repository
-2. Place your signups file as `input/signups.csv` (see format below)
+2. For each tournament, create a folder under `signups/` and place your signups file there (see structure below)
+
+## Folder structure
+
+```
+signups/
+  pair_names.txt         ← shared across all tournaments, can be customized
+  mein-turnier/          ← create this folder (any name)
+    input/               ← create this folder
+      signups.csv        ← place your signups file here
+    output/              ← created automatically by the program
+      pairs.csv
+      unlucky.csv
+      schedule.csv
+config.ini               ← tournament settings (courts, rounds, etc.)
+```
 
 ## Running the program
 
@@ -27,47 +42,61 @@ chmod +x start.sh
 python3 main.py
 ```
 
-## Workflow
+On startup the program lists all available tournaments in `signups/` and asks you to select one.
 
-The program has two steps:
+## Workflow
 
 ### Step 1 – Pair Draw (Auslosung)
 
-Reads `input/signups.csv` and draws mixed pairs (one woman + one man), distributed evenly across teams. Players who don't get a spot are listed as unlucky.
+Reads `signups/<turnier>/input/signups.csv` and draws mixed pairs (one woman + one man), distributed evenly across teams. Players who don't get a spot are listed as unlucky.
+
+If there are not enough signups for the configured number of courts, the program asks whether to abort or continue with one fewer court.
 
 **Output:**
-- `output/pairs.csv` — the drawn pairs with their couple name
-- `output/unlucky.csv` — players without a spot
+- `signups/<turnier>/output/pairs.csv` — the drawn pairs with their couple name
+- `signups/<turnier>/output/unlucky.csv` — players without a spot
 
 ### Step 2 – Schedule (Spielplan)
 
-Reads the pairs from `output/pairs.csv` and generates a randomized match schedule across courts and rounds.
+Reads the pairs from the tournament's output folder and generates a randomized match schedule across courts and rounds.
 
 **Output:**
-- `output/schedule.csv` — the full match schedule, readable in Excel
+- `signups/<turnier>/output/schedule.csv` — the full match schedule, readable in Excel
 
 ## Input file format
 
-### `input/signups.csv`
+### `signups/<turnier>/input/signups.csv`
+
+Each row is a single outer-quoted field containing name, gender, team, and timestamp:
 
 ```
-name,gender,team
-Anna Schmidt,Frau,SV Mensfelden
-Thomas Müller,Mann,SV Mensfelden
-Lisa Weber,Frau,TSV Lindheim
+"Anna Schmidt,""Frau"",""SV Mensfelden"",""2025-07-05T08:00:00+00:00"""
+"Thomas Müller,""Mann"",""SV Mensfelden"",""2025-07-05T08:01:00+00:00"""
 ```
 
-| Column   | Values               |
+| Position | Values               |
 |----------|----------------------|
-| `name`   | Full name            |
-| `gender` | `Frau` or `Mann`     |
-| `team`   | Team name            |
+| 1        | Full name            |
+| 2        | `Frau` or `Mann`     |
+| 3        | Team name            |
+| 4        | Timestamp (ignored)  |
 
-See `input/signups_example.csv` for a full example.
+Duplicate entries (same name + gender + team) are removed automatically. A trailing template row (`your-name,...`) is skipped.
 
-### `input/pair_names.txt`
+### `signups/pair_names.txt`
 
-One couple name per line (e.g. `Romeo & Julia`). A list of 60 names is included. You can add or remove names as you like.
+One couple name per line (e.g. `Romeo & Julia`). A list of 60 names is included and is shared across all tournaments. You can add or remove names as you like.
+
+## Configuration
+
+Edit `config.ini` to adjust tournament settings:
+
+```ini
+[Turnier]
+courts = 9           # number of courts
+pairs_per_court = 6  # pairs per court (total pairs = courts × pairs_per_court)
+rounds = 5           # number of rounds played
+```
 
 ## License
 

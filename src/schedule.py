@@ -2,54 +2,48 @@ import csv
 import random
 from pathlib import Path
 
-INPUT_PAIRS = Path("output/pairs.csv")
-OUTPUT_SCHEDULE = Path("output/schedule.csv")
-
-PAIRS_PER_COURT = 6
+from src import config
 
 
-def run():
+def run(tournament: Path):
     print("=== Spielplan-Generator ===\n")
+    print(f"Konfiguration: {config.COURTS} Felder, {config.PAIRS_PER_COURT} Pärchen/Feld, {config.ROUNDS} Runden\n")
 
-    if not INPUT_PAIRS.exists():
-        print(f"Fehler: '{INPUT_PAIRS}' wurde nicht gefunden.")
-        print("  Führe zuerst die Auslosung durch, oder lege eine Pärchen-Datei unter 'output/pairs.csv' ab.\n")
+    input_pairs = tournament / "output" / "pairs.csv"
+    output_schedule = tournament / "output" / "schedule.csv"
+
+    if not input_pairs.exists():
+        print(f"Fehler: '{input_pairs}' wurde nicht gefunden.")
+        print(f"  Führe zuerst die Auslosung durch.\n")
         return
 
-    pairs = _read_pairs()
-    print(f"{len(pairs)} Pärchen aus {INPUT_PAIRS} geladen.\n")
+    pairs = _read_pairs(input_pairs)
+    print(f"{len(pairs)} Pärchen aus {input_pairs} geladen.\n")
 
-    rounds = _ask_int("Wie viele Runden sollen gespielt werden? ")
-    if rounds is None:
-        return
-    courts = _ask_int("Wie viele Felder stehen zur Verfügung? ")
-    if courts is None:
-        return
-
-    needed = courts * PAIRS_PER_COURT
+    needed = config.COURTS * config.PAIRS_PER_COURT
     if len(pairs) < needed:
         print(
-            f"\nFehler: Zu wenige Pärchen – benötigt {needed} "
-            f"({courts} Felder × {PAIRS_PER_COURT}), vorhanden {len(pairs)}.\n"
+            f"Fehler: Zu wenige Pärchen – benötigt {needed} "
+            f"({config.COURTS} Felder × {config.PAIRS_PER_COURT}), vorhanden {len(pairs)}.\n"
         )
         return
 
-    Path("output").mkdir(exist_ok=True)
-    _generate_schedule(pairs, rounds, courts)
+    (tournament / "output").mkdir(exist_ok=True)
+    _generate_schedule(pairs, config.ROUNDS, config.COURTS, output_schedule)
 
-    print(f"\nSpielplan gespeichert unter {OUTPUT_SCHEDULE}\n")
+    print(f"\nSpielplan gespeichert unter {output_schedule}\n")
 
 
-def _read_pairs():
-    with open(INPUT_PAIRS, newline="", encoding="utf-8-sig") as f:
+def _read_pairs(path: Path):
+    with open(path, newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         return [row["pair_name"] for row in reader]
 
 
-def _generate_schedule(pairs, rounds, courts):
-    needed = courts * PAIRS_PER_COURT
+def _generate_schedule(pairs, rounds, courts, path: Path):
+    needed = courts * config.PAIRS_PER_COURT
 
-    with open(OUTPUT_SCHEDULE, "w", newline="", encoding="utf-8") as f:
+    with open(path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, delimiter=";")
 
         header = ["Runde"]
@@ -59,12 +53,13 @@ def _generate_schedule(pairs, rounds, courts):
 
         for round_num in range(1, rounds + 1):
             active = pairs[:needed]
-            random.shuffle(active)
+            if round_num > 1:
+                random.shuffle(active)
 
             for pair_idx in range(3):
                 row = [round_num if pair_idx == 0 else ""]
                 for court_idx in range(courts):
-                    base = court_idx * PAIRS_PER_COURT
+                    base = court_idx * config.PAIRS_PER_COURT
                     row += [
                         active[base + pair_idx],
                         "vs." if pair_idx == 0 else "",
@@ -73,19 +68,3 @@ def _generate_schedule(pairs, rounds, courts):
                 writer.writerow(row)
 
             writer.writerow([])
-
-
-def _ask_int(prompt):
-    while True:
-        try:
-            value = int(input(prompt))
-            if value > 0:
-                return value
-            print("Bitte eine positive Zahl eingeben.")
-        except ValueError:
-            print("Ungültige Eingabe. Bitte eine Zahl eingeben.")
-        except (KeyboardInterrupt, EOFError):
-            print()
-            return None
-
-

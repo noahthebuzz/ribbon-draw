@@ -1,5 +1,5 @@
-output/
-input/signups.csv
+signups/*/
+!signups/example-tournament/
 __pycache__/
 *.pyc
 .DS_Store
