@@ -3,35 +3,33 @@ import random
 from pathlib import Path
 
 from src import config
+from src.i18n import t
 
 
 def run(tournament: Path):
-    print("=== Spielplan-Generator ===\n")
-    print(f"Konfiguration: {config.COURTS} Felder, {config.PAIRS_PER_COURT} Pärchen/Feld, {config.ROUNDS} Runden\n")
+    print(t("schedule_header") + "\n")
+    print(t("schedule_config", courts=config.COURTS, ppc=config.PAIRS_PER_COURT, rounds=config.ROUNDS) + "\n")
 
     input_pairs = tournament / "output" / "pairs.csv"
     output_schedule = tournament / "output" / "schedule.csv"
 
     if not input_pairs.exists():
-        print(f"Fehler: '{input_pairs}' wurde nicht gefunden.")
-        print(f"  Führe zuerst die Auslosung durch.\n")
+        print(t("error_file_not_found", path=input_pairs))
+        print(f"  {t('error_pairs_hint')}\n")
         return
 
     pairs = _read_pairs(input_pairs)
-    print(f"{len(pairs)} Pärchen aus {input_pairs} geladen.\n")
+    print(t("pairs_loaded", n=len(pairs), path=input_pairs) + "\n")
 
     needed = config.COURTS * config.PAIRS_PER_COURT
     if len(pairs) < needed:
-        print(
-            f"Fehler: Zu wenige Pärchen – benötigt {needed} "
-            f"({config.COURTS} Felder × {config.PAIRS_PER_COURT}), vorhanden {len(pairs)}.\n"
-        )
+        print(t("error_too_few_pairs", needed=needed, courts=config.COURTS, ppc=config.PAIRS_PER_COURT, available=len(pairs)) + "\n")
         return
 
     (tournament / "output").mkdir(exist_ok=True)
     _generate_schedule(pairs, config.ROUNDS, config.COURTS, output_schedule)
 
-    print(f"\nSpielplan gespeichert unter {output_schedule}\n")
+    print(t("schedule_saved", path=output_schedule) + "\n")
 
 
 def _read_pairs(path: Path):
@@ -46,9 +44,9 @@ def _generate_schedule(pairs, rounds, courts, path: Path):
     with open(path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, delimiter=";")
 
-        header = ["Runde"]
+        header = [t("col_round")]
         for i in range(courts):
-            header += [f"Feld {i + 1}", "", ""]
+            header += [t("court_label", n=i + 1), "", ""]
         writer.writerow(header)
 
         for round_num in range(1, rounds + 1):

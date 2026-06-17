@@ -4,31 +4,33 @@ from collections import defaultdict
 from pathlib import Path
 
 from src import config
+from src.i18n import t
 
 INPUT_PAIR_NAMES = Path("signups/pair_names.txt")
 
 _FEMALE_GENDERS = {"frau", "f", "female", "w"}
+_GENDER_SORT = {"female": 0, "male": 1}
 
 
 def run(tournament: Path):
-    print("=== Auslosung ===\n")
+    print(t("draw_header") + "\n")
 
     input_signups = tournament / "input" / "signups.csv"
     output_pairs = tournament / "output" / "pairs.csv"
     output_unlucky = tournament / "output" / "unlucky.csv"
 
     if not input_signups.exists():
-        print(f"Fehler: '{input_signups}' wurde nicht gefunden.")
-        print(f"  Lege die Anmeldungsdatei unter 'signups/{tournament.name}/input/signups.csv' ab.\n")
+        print(t("error_file_not_found", path=input_signups))
+        print(f"  {t('error_signups_hint', name=tournament.name)}\n")
         return
     if not INPUT_PAIR_NAMES.exists():
-        print(f"Fehler: '{INPUT_PAIR_NAMES}' wurde nicht gefunden.\n")
+        print(t("error_file_not_found", path=INPUT_PAIR_NAMES) + "\n")
         return
 
     women, men = _read_signups(input_signups)
     total_w = sum(len(v) for v in women.values())
     total_m = sum(len(v) for v in men.values())
-    print(f"Anmeldungen geladen: {total_w} Frauen, {total_m} Männer ({total_w + total_m} gesamt)\n")
+    print(t("signups_loaded", w=total_w, m=total_m, total=total_w + total_m) + "\n")
 
     courts = _resolve_courts(total_w, total_m)
     if courts is None:
@@ -37,19 +39,16 @@ def run(tournament: Path):
     n_pairs = courts * config.PAIRS_PER_COURT
     sit_out_w = total_w - n_pairs
     sit_out_m = total_m - n_pairs
-    print(f"Es werden {n_pairs} Pärchen ausgelost.")
+    print(t("drawing_n_pairs", n=n_pairs))
     if sit_out_w > 0 or sit_out_m > 0:
-        print(f"  {sit_out_w} Frauen und {sit_out_m} Männer werden nicht berücksichtigt (Pechvögel).\n")
+        print(f"  {t('sit_out', w=sit_out_w, m=sit_out_m)}\n")
 
     selected_women, unlucky_women = _select_equally(women, n_pairs)
     selected_men, unlucky_men = _select_equally(men, n_pairs)
 
     pair_names = _read_pair_names()
     if len(pair_names) < n_pairs:
-        print(
-            f"Hinweis: Nur {len(pair_names)} Pärchennamen vorhanden, "
-            f"{n_pairs} benötigt. Fehlende werden durchnummeriert."
-        )
+        print(t("pair_names_warning", available=len(pair_names), needed=n_pairs))
 
     pairs = _create_pairs(selected_women, selected_men, pair_names)
 
@@ -57,17 +56,15 @@ def run(tournament: Path):
     _write_pairs(pairs, output_pairs)
     _write_unlucky(unlucky_women, unlucky_men, output_unlucky)
 
-    print(f"\n{len(pairs)} Pärchen wurden erfolgreich ausgelost.")
-    print(f"  Pärchen    → {output_pairs}")
-    print(f"  Pechvögel  → {output_unlucky}")
+    print(f"\n{t('draw_success', n=len(pairs))}")
+    print(f"  {t('output_pairs_label', path=output_pairs)}")
+    print(f"  {t('output_unlucky_label', path=output_unlucky)}")
     if unlucky_women or unlucky_men:
-        print(f"  ({len(unlucky_women)} Frauen und {len(unlucky_men)} Männer haben keinen Platz bekommen.)")
+        print(f"  {t('unlucky_count', w=len(unlucky_women), m=len(unlucky_men))}")
     print()
 
 
 def _resolve_courts(total_w, total_m):
-    """Returns the number of courts to use, asking the user to reduce if signups are insufficient.
-    Returns None if the user aborts or no valid court count exists."""
     courts = config.COURTS
     while True:
         available = min(total_w, total_m)
@@ -77,35 +74,29 @@ def _resolve_courts(total_w, total_m):
 
         next_courts = courts - 1
         if next_courts == 0:
-            print(
-                f"Fehler: Nicht genug Anmeldungen für ein Turnier. "
-                f"Mindestens {config.PAIRS_PER_COURT} Frauen und {config.PAIRS_PER_COURT} Männer benötigt.\n"
-            )
+            print(t("error_min_signups", min=config.PAIRS_PER_COURT) + "\n")
             return None
 
         next_pairs = next_courts * config.PAIRS_PER_COURT
-        print(
-            f"Nicht genug Anmeldungen für {courts} Felder "
-            f"({needed} Pärchen benötigt, nur {available} möglich)."
-        )
-        print(f"  1) Abbrechen")
-        print(f"  2) Mit {next_courts} Feldern ({next_pairs} Pärchen) weitermachen")
+        print(t("not_enough_signups", courts=courts, needed=needed, available=available))
+        print(f"  1) {t('option_abort')}")
+        print(f"  2) {t('option_fewer_courts', courts=next_courts, pairs=next_pairs)}")
         print()
 
         while True:
             try:
                 choice = input("  > ").strip()
             except (KeyboardInterrupt, EOFError):
-                print("\nAuslosung abgebrochen.\n")
+                print(f"\n{t('draw_aborted')}\n")
                 return None
             if choice == "1":
-                print("Auslosung abgebrochen.\n")
+                print(t("draw_aborted") + "\n")
                 return None
             if choice == "2":
                 courts -= 1
                 print()
                 break
-            print("Bitte 1 oder 2 eingeben.")
+            print(t("prompt_1_or_2"))
 
 
 def _read_signups(path: Path):
@@ -137,13 +128,12 @@ def _read_signups(path: Path):
                 men[team].append(name)
 
     if duplicates:
-        print(f"Hinweis: {duplicates} doppelte Anmeldung(en) wurden entfernt.")
+        print(t("duplicates_removed", n=duplicates))
 
     return women, men
 
 
 def _select_equally(teams, n):
-    """Selects n players via round-robin across teams for even distribution."""
     pools = {team: players[:] for team, players in teams.items()}
     for players in pools.values():
         random.shuffle(players)
@@ -165,7 +155,6 @@ def _select_equally(teams, n):
 
 
 def _create_pairs(women, men, pair_names):
-    """Pairs each woman with a man, preferring different teams."""
     random.shuffle(pair_names)
     men_pool = list(men)
     random.shuffle(men_pool)
@@ -181,7 +170,7 @@ def _create_pairs(women, men, pair_names):
         man_name, man_team = men_pool.pop(matched_idx)
         pairs.append(
             {
-                "pair_name": pair_names[i] if i < len(pair_names) else f"Pärchen {i + 1}",
+                "pair_name": pair_names[i] if i < len(pair_names) else t("pair_fallback", n=i + 1),
                 "woman_name": woman_name,
                 "woman_team": woman_team,
                 "man_name": man_name,
@@ -208,15 +197,13 @@ def _write_pairs(pairs, path: Path):
         writer.writerows(sorted_pairs)
 
 
-_GENDER_ORDER = {"frau": 0, "mann": 1}
-
-
 def _write_unlucky(unlucky_women, unlucky_men, path: Path):
-    entries = [("Frau", name, team) for name, team in unlucky_women] + \
-              [("Mann", name, team) for name, team in unlucky_men]
-    entries.sort(key=lambda e: (e[2].lower(), _GENDER_ORDER.get(e[0].lower(), 2), e[1].lower()))
+    entries = [("female", name, team) for name, team in unlucky_women] + \
+              [("male", name, team) for name, team in unlucky_men]
+    entries.sort(key=lambda e: (e[2].lower(), _GENDER_SORT[e[0]], e[1].lower()))
     with open(path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["geschlecht", "name", "team"])
-        for geschlecht, name, team in entries:
-            writer.writerow([geschlecht, name, team])
+        writer.writerow([t("col_gender"), t("col_name"), t("col_team")])
+        for gender_key, name, team in entries:
+            label = t("gender_female") if gender_key == "female" else t("gender_male")
+            writer.writerow([label, name, team])
