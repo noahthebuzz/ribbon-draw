@@ -16,6 +16,7 @@ def main():
     tournament = _select_tournament()
     if tournament is None:
         sys.exit(1)
+    draw.show_signup_summary(tournament)
 
     while True:
         print(i18n.t("current_tournament", name=tournament.name))
@@ -41,6 +42,7 @@ def main():
             new = _select_tournament()
             if new is not None:
                 tournament = new
+                draw.show_signup_summary(tournament)
         elif choice in ("4", "q", "exit"):
             print(i18n.t("goodbye"))
             sys.exit(0)

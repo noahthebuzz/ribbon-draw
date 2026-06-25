@@ -18,6 +18,12 @@
   "invalid_input_main": "Entrée inconnue. Veuillez saisir 1, 2, 3 ou 4.",
   "goodbye": "Au revoir !",
 
+  "signup_summary_header": "Inscriptions :",
+  "signup_summary_women": "  Femmes :        {w}",
+  "signup_summary_men": "  Hommes :        {m}",
+  "signup_summary_total": "  Total :         {total}",
+  "signup_summary_pairs": "  Paires possibles : {pairs}",
+
   "draw_header": "=== Tirage au sort ===",
   "error_file_not_found": "Erreur : '{path}' introuvable.",
   "error_signups_hint": "Placez le fichier d'inscriptions sous 'signups/{name}/input/signups.csv'.",

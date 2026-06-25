@@ -12,6 +12,22 @@ _FEMALE_GENDERS = {"frau", "f", "female", "w"}
 _GENDER_SORT = {"female": 0, "male": 1}
 
 
+def show_signup_summary(tournament: Path):
+    input_signups = tournament / "input" / "signups.csv"
+    if not input_signups.exists():
+        return
+    women, men = _read_signups(input_signups)
+    total_w = sum(len(v) for v in women.values())
+    total_m = sum(len(v) for v in men.values())
+    pairs = min(total_w, total_m)
+    print(t("signup_summary_header"))
+    print(t("signup_summary_women", w=total_w))
+    print(t("signup_summary_men", m=total_m))
+    print(t("signup_summary_total", total=total_w + total_m))
+    print(t("signup_summary_pairs", pairs=pairs))
+    print()
+
+
 def run(tournament: Path):
     print(t("draw_header") + "\n")
 

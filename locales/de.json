@@ -18,6 +18,12 @@
   "invalid_input_main": "Unbekannte Eingabe. Bitte 1, 2, 3 oder 4 eingeben.",
   "goodbye": "Tschüss!",
 
+  "signup_summary_header": "Anmeldungen:",
+  "signup_summary_women": "  Frauen:         {w}",
+  "signup_summary_men": "  Männer:         {m}",
+  "signup_summary_total": "  Gesamt:         {total}",
+  "signup_summary_pairs": "  Mögliche Paare: {pairs}",
+
   "draw_header": "=== Auslosung ===",
   "error_file_not_found": "Fehler: '{path}' wurde nicht gefunden.",
   "error_signups_hint": "Lege die Anmeldungsdatei unter 'signups/{name}/input/signups.csv' ab.",

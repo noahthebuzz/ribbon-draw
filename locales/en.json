@@ -18,6 +18,12 @@
   "invalid_input_main": "Unknown input. Please enter 1, 2, 3 or 4.",
   "goodbye": "Goodbye!",
 
+  "signup_summary_header": "Signups:",
+  "signup_summary_women": "  Women:          {w}",
+  "signup_summary_men": "  Men:            {m}",
+  "signup_summary_total": "  Total:          {total}",
+  "signup_summary_pairs": "  Possible pairs: {pairs}",
+
   "draw_header": "=== Pair Draw ===",
   "error_file_not_found": "Error: '{path}' not found.",
   "error_signups_hint": "Place the signups file at 'signups/{name}/input/signups.csv'.",
