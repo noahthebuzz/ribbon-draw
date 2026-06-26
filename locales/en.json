@@ -54,6 +54,7 @@
   "error_pairs_hint": "Run the draw first.",
   "pairs_loaded": "{n} pairs loaded from {path}.",
   "error_too_few_pairs": "Error: Too few pairs – need {needed} ({courts} courts × {ppc}), have {available}.",
+  "schedule_fewer_courts": "Note: Pairs file contains data for {courts} courts – schedule will be adjusted accordingly.",
   "schedule_saved": "Schedule saved to {path}",
   "col_round": "Round",
   "court_label": "Court {n}"

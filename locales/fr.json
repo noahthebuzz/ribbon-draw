@@ -54,6 +54,7 @@
   "error_pairs_hint": "Effectuez d'abord le tirage au sort.",
   "pairs_loaded": "{n} paires chargées depuis {path}.",
   "error_too_few_pairs": "Erreur : Trop peu de paires – {needed} requises ({courts} terrains × {ppc}), {available} disponibles.",
+  "schedule_fewer_courts": "Remarque : Le fichier de paires contient des données pour {courts} terrains – le planning sera ajusté en conséquence.",
   "schedule_saved": "Planning enregistré sous {path}",
   "col_round": "Manche",
   "court_label": "Terrain {n}"
