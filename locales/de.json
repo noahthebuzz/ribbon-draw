@@ -54,6 +54,7 @@
   "error_pairs_hint": "Führe zuerst die Auslosung durch.",
   "pairs_loaded": "{n} Pärchen aus {path} geladen.",
   "error_too_few_pairs": "Fehler: Zu wenige Pärchen – benötigt {needed} ({courts} Felder × {ppc}), vorhanden {available}.",
+  "schedule_fewer_courts": "Hinweis: Pärchen-Datei enthält Daten für {courts} Felder – Spielplan wird entsprechend angepasst.",
   "schedule_saved": "Spielplan gespeichert unter {path}",
   "col_round": "Runde",
   "court_label": "Feld {n}"

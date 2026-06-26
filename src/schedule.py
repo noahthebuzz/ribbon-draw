@@ -8,7 +8,6 @@ from src.i18n import t
 
 def run(tournament: Path):
     print(t("schedule_header") + "\n")
-    print(t("schedule_config", courts=config.COURTS, ppc=config.PAIRS_PER_COURT, rounds=config.ROUNDS) + "\n")
 
     input_pairs = tournament / "output" / "pairs.csv"
     output_schedule = tournament / "output" / "schedule.csv"
@@ -21,13 +20,17 @@ def run(tournament: Path):
     pairs = _read_pairs(input_pairs)
     print(t("pairs_loaded", n=len(pairs), path=input_pairs) + "\n")
 
-    needed = config.COURTS * config.PAIRS_PER_COURT
-    if len(pairs) < needed:
-        print(t("error_too_few_pairs", needed=needed, courts=config.COURTS, ppc=config.PAIRS_PER_COURT, available=len(pairs)) + "\n")
+    if len(pairs) < config.PAIRS_PER_COURT:
+        print(t("error_too_few_pairs", needed=config.PAIRS_PER_COURT, courts=1, ppc=config.PAIRS_PER_COURT, available=len(pairs)) + "\n")
         return
 
+    courts = len(pairs) // config.PAIRS_PER_COURT
+    print(t("schedule_config", courts=courts, ppc=config.PAIRS_PER_COURT, rounds=config.ROUNDS) + "\n")
+    if courts < config.COURTS:
+        print(t("schedule_fewer_courts", courts=courts) + "\n")
+
     (tournament / "output").mkdir(exist_ok=True)
-    _generate_schedule(pairs, config.ROUNDS, config.COURTS, output_schedule)
+    _generate_schedule(pairs, config.ROUNDS, courts, output_schedule)
 
     print(t("schedule_saved", path=output_schedule) + "\n")
 
